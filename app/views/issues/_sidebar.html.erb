@@ -48,9 +48,13 @@
       s.html_safe
     end
 
-    def print_project_hierarchy(projects)
+    def print_project_hierarchy(cur, projects)
       print_project_nested_lists(projects) do |project|
-        link_to project, {:project_id => project, :action => 'show', :id => ''}
+        if (cur == project)
+          "<spanp style=\"background-color:blue;color:white\">#{project}</span>".html_safe
+        else
+          link_to project, {:project_id => project, :action => 'show', :id => ''}
+        end
       end
     end
   %>
@@ -60,7 +64,7 @@
     });
   </script>
   <ol id='sidetree'>
-    <%= print_project_hierarchy Project.active %>
+    <%= print_project_hierarchy @project, Project.active %>
   </ol>
 </div>
 
