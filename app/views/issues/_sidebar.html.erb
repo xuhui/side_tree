@@ -1,0 +1,83 @@
+<% content_for :header_tags do%>
+  <%= stylesheet_link_tag('side_tree.css', :plugin => :side_tree) %>
+  <%= stylesheet_link_tag 'jquery.bonsai.css', :plugin => :side_tree %>
+  <%= javascript_include_tag 'jquery.bonsai.js', :plugin => :side_tree %>
+<%end%>
+
+<div id="side_tree">
+  <h3>Projects</h3>
+  <%
+  # Yeah, should rework and move to controller
+    def print_project_nested_lists(projects)
+      s = ''
+      if projects.any?
+        ancestors = []
+        original_project = @project
+        projects.sort_by(&:lft).each do |project|
+          # set the project environment to please macros.
+          @project = project
+          if (ancestors.empty? || project.is_descendant_of?(ancestors.last))
+            if (ancestors.empty?)
+              s << ""
+            else
+              s << "<UL>"
+            end
+          else
+            ancestors.pop
+            s << "</li>"
+            while (ancestors.any? && !project.is_descendant_of?(ancestors.last))
+              ancestors.pop
+              s << "</ul></li>\n"
+            end
+          end
+          if ( ancestors.empty? )
+            s << "<LI>"
+          else
+            s << "<li>"
+          end
+          s << h(block_given? ? yield(project) : project.name)
+          s << ""
+          ancestors << project
+        end
+        s << ("</li>\n" * ancestors.size)
+        @project = original_project
+      end
+      # puts ">>>>>>"
+      # puts s
+      # puts "<<<<<<"
+      s.html_safe
+    end
+
+    def print_project_hierarchy(projects)
+      print_project_nested_lists(projects) do |project|
+        link_to project, {:project_id => project, :action => 'show', :id => ''}
+      end
+    end
+  %>
+  <script>
+    jQuery(function() {
+        $('#sidetree').bonsai({uuid:"bar"});
+    });
+  </script>
+  <ol id='sidetree'>
+    <%= print_project_hierarchy Project.active %>
+  </ol>
+</div>
+
+<h3><%= l(:label_issue_plural) %></h3>
+<%= link_to l(:label_issue_view_all), _project_issues_path(@project, :set_filter => 1) %><br />
+<% if @project %>
+<%= link_to l(:field_summary), project_issues_report_path(@project) %><br />
+<% end %>
+<%= call_hook(:view_issues_sidebar_issues_bottom) %>
+
+<% if User.current.allowed_to?(:view_calendar, @project, :global => true) %>
+  <%= link_to l(:label_calendar), _project_calendar_path(@project) %><br />
+<% end %>
+<% if User.current.allowed_to?(:view_gantt, @project, :global => true) %>
+  <%= link_to l(:label_gantt), _project_gantt_path(@project) %><br />
+<% end %>
+<%= call_hook(:view_issues_sidebar_planning_bottom) %>
+
+<%= render_sidebar_queries %>
+<%= call_hook(:view_issues_sidebar_queries_bottom) %>
