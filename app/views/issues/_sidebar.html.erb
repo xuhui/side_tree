@@ -51,7 +51,8 @@
     def print_project_hierarchy(cur, projects)
       print_project_nested_lists(projects) do |project|
         if (cur == project)
-          "<spanp style=\"background-color:blue;color:white\">#{project}</span>".html_safe
+          "<span style=\"background-color:blue;color:white\">#{project}</span>".html_safe
+          #{project}".html_safe
         else
           link_to project, {:project_id => project, :action => 'show', :id => ''}
         end
