@@ -146,7 +146,7 @@ function getCookie(c_name) {
 			else {
         id = listItem[0].outerText.split('\n')[0];
         id = treeid + '_' + id;
-        setCookie(id, "collapse", 100);
+        setCookie(id, "collapsed", 100);
 				this.collapse(listItem);
 			}
 		},
